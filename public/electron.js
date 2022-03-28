@@ -84,6 +84,10 @@ function createWindow () {
         console.error(err)
         mainWindow.webContents.send('uploadProgress', { error: `storing files: ${err.message}` })
         return
+      } finally {
+        if (car && car.blockstore && car.blockstore.close) {
+          car.blockstore.close()
+        }
       }
 
       mainWindow.webContents.send('uploadProgress', { cid: cid.toString(), storedBytes: totalBytes, statusText: 'Done!' })
