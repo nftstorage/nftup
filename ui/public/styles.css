@@ -1,0 +1,14 @@
+:root {
+  --nftorange: #ee4116;
+}
+
+.bg-nftorange {
+  background-color: var(--nftorange);
+}
+
+.hover-b--white {
+  transition: border-color .15s ease-in;
+}
+.hover-b--white:hover {
+  border-color: #fff;
+}

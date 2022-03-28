@@ -1,0 +1,49 @@
+{
+  "name": "nftup",
+  "version": "0.0.0",
+  "private": true,
+  "description": "NFT.Storage uploader",
+  "main": "main.js",
+  "scripts": {
+    "start": "cd ui && react-scripts build && electron ..",
+    "test": "cd ui && react-scripts test"
+  },
+  "repository": "https://github.com/nftstorage/nftup",
+  "author": "Alan Shaw",
+  "license": "Apache-2.0 OR MIT",
+  "dependencies": {
+    "bytes": "^3.1.2",
+    "electron": "^17.2.0",
+    "files-from-path": "^0.2.5",
+    "format-number": "^3.0.0",
+    "nft.storage": "^6.1.0",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "web-vitals": "^2.1.4"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^5.16.3",
+    "@testing-library/react": "^12.1.4",
+    "@testing-library/user-event": "^13.5.0",
+    "react-scripts": "5.0.0",
+    "standard": "^16.0.4"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
