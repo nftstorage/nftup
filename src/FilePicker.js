@@ -11,7 +11,7 @@ export function FilePicker ({ onPickFiles }) {
     setBorderClass('b--light-red')
     onPickFiles(Array.from(e.dataTransfer.files))
   }
-  const handleFilesChange = e => onPickFiles(e.target.files)
+  const handleFilesChange = e => onPickFiles(Array.from(e.target.files))
   const labelClass = `relative ba bw4 ${borderClass} grow b--dashed br4 ma4 flex-auto`
   const labelStyle = { backgroundColor: 'rgba(255,255,255,0.1)' }
   return (
