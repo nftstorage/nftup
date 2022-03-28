@@ -61,9 +61,9 @@ function createWindow () {
       mainWindow.webContents.send('uploadProgress', { statusText: 'Packing files...' })
       let cid, car
       try {
-        const encoded = await NFTStorage.encodeDirectory(files)
-        cid = encoded.cid
-        car = encoded.car
+        ;({ cid, car } = files.length === 1 && paths[0].endsWith(files[0].name)
+          ? await NFTStorage.encodeBlob(files[0])
+          : await NFTStorage.encodeDirectory(files))
       } catch (err) {
         console.error(err)
         mainWindow.webContents.send('uploadProgress', { error: `packing files: ${err.message}` })
