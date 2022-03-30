@@ -3,15 +3,18 @@ import { FilePicker } from './FilePicker.js'
 import { UploadProgress } from './UploadProgress.js'
 import { Reporter } from './Reporter.js'
 import { ErrorMessage } from './ErrorMessage.js'
+import { TokenForm } from './TokenForm.js'
 const { ipcRenderer } = window.require('electron')
 
 const STAGE_PICKING = 'picking'
+const STAGE_AUTHENTICATING = 'authenticating'
 const STAGE_UPLOADING = 'uploading'
 const STAGE_ERRORING = 'erroring'
 const STAGE_REPORTING = 'reporting'
 
 export function App () {
   const [stage, setStage] = useState(STAGE_PICKING)
+  const [filePaths, setFilePaths] = useState([])
   const [statusText, setStatusText] = useState('')
   const [storedBytes, setStoredBytes] = useState(0)
   const [totalBytes, setTotalBytes] = useState(0)
@@ -20,12 +23,13 @@ export function App () {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    const handleUploadProgress = (_, progress) => {
+    const handleUploadProgress = async (_, progress) => {
       if (progress.error != null) {
         setError(progress.error)
         setStage(STAGE_ERRORING)
         return
       }
+      if (progress.filePaths != null) setFilePaths(progress.filePaths)
       if (progress.statusText != null) setStatusText(progress.statusText)
       if (progress.storedBytes != null) setStoredBytes(progress.storedBytes)
       if (progress.totalBytes != null) setTotalBytes(progress.totalBytes)
@@ -47,6 +51,14 @@ export function App () {
     )
   }
 
+  if (stage === STAGE_REPORTING) {
+    return (
+      <Layout>
+        <Reporter cid={cid} onClose={() => setStage(STAGE_PICKING)} />
+      </Layout>
+    )
+  }
+
   if (stage === STAGE_UPLOADING) {
     return (
       <Layout>
@@ -60,23 +72,36 @@ export function App () {
     )
   }
 
-  if (stage === STAGE_REPORTING) {
+  if (stage === STAGE_AUTHENTICATING) {
+    const onToken = async token => {
+      await ipcRenderer.invoke('setApiToken', token)
+      setStage(STAGE_UPLOADING)
+      ipcRenderer.send('uploadFiles', filePaths)
+    }
     return (
       <Layout>
-        <Reporter cid={cid} onClose={() => setStage(STAGE_PICKING)} />
+        <TokenForm onToken={onToken} />
       </Layout>
     )
   }
 
-  const onPickFiles = files => {
+  const onPickFiles = async files => {
+    const filePaths = files.map(f => f.path)
+    setFilePaths(filePaths)
     setError('')
-    setStage(STAGE_UPLOADING)
     setStatusText('Reading files...')
     setStoredBytes(0)
     setTotalBytes(files.reduce((total, f) => total + f.size, 0))
     setTotalFiles(files.length)
     setCid('')
-    ipcRenderer.send('uploadFiles', files.map(f => f.path))
+
+    const hasToken = await ipcRenderer.invoke('hasApiToken')
+    if (!hasToken) {
+      return setStage(STAGE_AUTHENTICATING)
+    }
+
+    setStage(STAGE_UPLOADING)
+    ipcRenderer.send('uploadFiles', filePaths)
   }
   return (
     <Layout>

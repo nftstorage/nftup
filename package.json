@@ -15,7 +15,7 @@
       "build/**/*",
       "node_modules/**/*"
     ],
-    "directories":{
+    "directories": {
       "buildResources": "assets"
     }
   },
@@ -34,6 +34,7 @@
   "dependencies": {
     "bytes": "^3.1.2",
     "electron-is-dev": "^2.0.0",
+    "electron-store": "^8.0.1",
     "files-from-path": "^0.2.5",
     "format-number": "^3.0.0",
     "nft.storage": "^6.1.0",

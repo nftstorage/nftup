@@ -1,15 +1,43 @@
-// Modules to control application life and create native browser window
-const { app, BrowserWindow, ipcMain, shell } = require('electron')
+const { app, BrowserWindow, ipcMain, shell, Menu } = require('electron')
 const isDev = require('electron-is-dev')
 const path = require('path')
 const { filesFromPath } = require('files-from-path')
 const { NFTStorage } = require('nft.storage')
+const Store = require('electron-store')
 
 const endpoint = 'https://api.nft.storage'
-const token = process.env.TOKEN
 
 function createWindow () {
-  // Create the browser window.
+  const store = new Store({ schema: { apiToken: { type: 'string' } } })
+
+  const template = [
+    { role: 'appMenu' },
+    { role: 'fileMenu' },
+    { role: 'editMenu' },
+    {
+      label: 'Tools',
+      submenu: [{
+        id: 'clear-api-token',
+        label: 'Clear API Token',
+        click: () => store.set('apiToken', ''),
+        enabled: true
+      }]
+    },
+    { role: 'windowMenu' },
+    {
+      role: 'help',
+      submenu: [
+        {
+          label: 'Learn More',
+          click: () => shell.openExternal('https://nft.storage')
+        }
+      ]
+    }
+  ]
+
+  const menu = Menu.buildFromTemplate(template)
+  Menu.setApplicationMenu(menu)
+
   const mainWindow = new BrowserWindow({
     title: 'NFT UP',
     width: 880,
@@ -22,7 +50,6 @@ function createWindow () {
     }
   })
 
-  // and load the index.html of the app.
   mainWindow.loadURL(isDev
     ? 'http://localhost:3000'
     : `file://${path.join(__dirname, '..', 'build', 'index.html')}`)
@@ -32,33 +59,41 @@ function createWindow () {
     return { action: 'deny' }
   })
 
-  // Open the DevTools.
   // mainWindow.webContents.openDevTools()
 
+  ipcMain.handle('setApiToken', (_, token) => store.set('apiToken', token))
+  ipcMain.handle('hasApiToken', () => Boolean(store.get('apiToken')))
+
+  const sendUploadProgress = p => mainWindow.webContents.send('uploadProgress', p)
+
   ipcMain.on('uploadFiles', async (event, paths) => {
+    /** @type {string} */
+    const token = store.get('apiToken')
+    if (!token) {
+      return sendUploadProgress({ error: 'missing API token' })
+    }
+
     try {
       mainWindow.setProgressBar(2)
-      mainWindow.webContents.send('uploadProgress', { statusText: 'Reading files...' })
+      sendUploadProgress({ statusText: 'Reading files...' })
       let totalBytes = 0
       const files = []
+      const filePaths = []
       try {
         for (const path of paths) {
           for await (const file of filesFromPath(path)) {
             files.push(file)
+            filePaths.push(file.path)
             totalBytes += file.size
-            mainWindow.webContents.send('uploadProgress', {
-              totalBytes,
-              totalFiles: files.length
-            })
+            sendUploadProgress({ filePaths, totalBytes, totalFiles: files.length })
           }
         }
       } catch (err) {
         console.error(err)
-        mainWindow.webContents.send('uploadProgress', { error: `reading files: ${err.message}` })
-        return
+        return sendUploadProgress({ error: `reading files: ${err.message}` })
       }
 
-      mainWindow.webContents.send('uploadProgress', { statusText: 'Packing files...' })
+      sendUploadProgress({ statusText: 'Packing files...' })
       let cid, car
       try {
         ;({ cid, car } = files.length === 1 && paths[0].endsWith(files[0].name)
@@ -66,31 +101,29 @@ function createWindow () {
           : await NFTStorage.encodeDirectory(files))
       } catch (err) {
         console.error(err)
-        mainWindow.webContents.send('uploadProgress', { error: `packing files: ${err.message}` })
-        return
+        return sendUploadProgress({ error: `packing files: ${err.message}` })
       }
 
-      mainWindow.webContents.send('uploadProgress', { statusText: 'Storing files...', storedBytes: 0.01 })
+      sendUploadProgress({ statusText: 'Storing files...', storedBytes: 0.01 })
       try {
         let storedBytes = 0
         await NFTStorage.storeCar({ endpoint, token }, car, {
           onStoredChunk (size) {
             storedBytes += size
-            mainWindow.webContents.send('uploadProgress', { storedBytes })
+            sendUploadProgress({ storedBytes })
             mainWindow.setProgressBar(storedBytes / totalBytes)
           }
         })
       } catch (err) {
         console.error(err)
-        mainWindow.webContents.send('uploadProgress', { error: `storing files: ${err.message}` })
-        return
+        return sendUploadProgress({ error: `storing files: ${err.message}` })
       } finally {
         if (car && car.blockstore && car.blockstore.close) {
           car.blockstore.close()
         }
       }
 
-      mainWindow.webContents.send('uploadProgress', { cid: cid.toString(), storedBytes: totalBytes, statusText: 'Done!' })
+      sendUploadProgress({ cid: cid.toString(), storedBytes: totalBytes, statusText: 'Done!' })
     } finally {
       mainWindow.setProgressBar(-1)
     }

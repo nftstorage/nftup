@@ -12,8 +12,8 @@ Clone the repo and install dependencies:
 npm install
 ```
 
-Get your API token from NFT.Storage and start the app like:
+Start the app like:
 
 ```
-TOKEN=<YOUR_TOKEN> npm start
+npm start
 ```
