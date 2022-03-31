@@ -9,10 +9,27 @@ export function UploadProgress ({ statusText, storedBytes, totalBytes, totalFile
       <div className='w-100 pa4 ba bg-white'>
         <p className='f4 mv1'><strong>{fmt(totalFiles)}</strong> files, {storedBytes ? <span><strong>{bytes(storedBytes)}</strong><span> of </span></span> : ''}<strong>{bytes(totalBytes)}</strong></p>
         {storedBytes
-          ? <progress max={totalBytes} value={storedBytes} className='w-100' />
-          : <progress className='w-100' />}
+          ? <Meter max={totalBytes} value={storedBytes} />
+          : <MeterIndeterminate />}
         <p className='f4 mv1'>{statusText}</p>
       </div>
+    </div>
+  )
+}
+
+function Meter ({ value, max }) {
+  const percent = Math.min((value / max) * 100, 100)
+  return (
+    <div className='meter solid'>
+      <span style={{ width: `${percent}%` }} />
+    </div>
+  )
+}
+
+function MeterIndeterminate () {
+  return (
+    <div className='meter animate striped'>
+      <span className='db'><span /></span>
     </div>
   )
 }

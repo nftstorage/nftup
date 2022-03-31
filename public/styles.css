@@ -12,3 +12,66 @@
 .hover-b--white:hover {
   border-color: #fff;
 }
+
+/* https://css-tricks.com/css3-progress-bars/ */
+.meter {
+  margin: 0.5rem 0;
+  height: 20px;
+  position: relative;
+  background: #555;
+  border-radius: 10px;
+  box-shadow: inset 0 -1px 1px rgba(255, 255, 255, 0.3);
+  overflow: hidden;
+}
+.meter > span {
+  display: block;
+  height: 100%;
+  background-color: #ee4116;
+  background-image: linear-gradient(
+    center bottom,
+    #ee4116 37%,
+    #d53810 69%
+  );
+  box-shadow: 
+    inset 0 2px 9px  rgba(255,255,255,0.3),
+    inset 0 -2px 6px rgba(0,0,0,0.4);
+  position: relative;
+  overflow: hidden;
+}
+.meter.solid > span {
+  transition: width 300ms ease-in;
+}
+.meter.striped > span:after, .animate > span > span {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background-image: linear-gradient(
+    -45deg, 
+    rgba(255, 255, 255, .2) 25%, 
+    transparent 25%, 
+    transparent 50%, 
+    rgba(255, 255, 255, .2) 50%, 
+    rgba(255, 255, 255, .2) 75%, 
+    transparent 75%, 
+    transparent
+  );
+  z-index: 1;
+  background-size: 50px 50px;
+  animation: move 2s linear infinite;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.animate > span::after {
+  display: none;
+}
+@keyframes meter-move {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 50px 50px;
+  }
+}
+.meter > span::after, .animate > span > span {
+  animation: meter-move 2s linear infinite;
+}
