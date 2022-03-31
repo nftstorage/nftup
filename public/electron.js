@@ -4,6 +4,7 @@ const path = require('path')
 const { filesFromPath } = require('files-from-path')
 const { NFTStorage } = require('nft.storage')
 const Store = require('electron-store')
+const fs = require('fs')
 
 const endpoint = 'https://api.nft.storage'
 
@@ -14,6 +15,7 @@ function createWindow () {
     { role: 'appMenu' },
     { role: 'fileMenu' },
     { role: 'editMenu' },
+    ...isDev ? [{ role: 'viewMenu' }] : [],
     {
       label: 'Tools',
       submenu: [{
@@ -80,8 +82,14 @@ function createWindow () {
       const files = []
       const filePaths = []
       try {
+        let pathPrefix
+        // if a single directory, yield files without the directory name in them
+        if (paths.length === 1 && (await fs.promises.stat(paths[0])).isDirectory) {
+          pathPrefix = paths[0]
+        }
+
         for (const path of paths) {
-          for await (const file of filesFromPath(path)) {
+          for await (const file of filesFromPath(path, { pathPrefix })) {
             files.push(file)
             filePaths.push(file.path)
             totalBytes += file.size
