@@ -11,6 +11,21 @@
     "mac": {
       "category": "public.app-category.utilities"
     },
+    "dmg": {
+      "background": "build/background.png",
+      "contents": [
+        {
+          "x": 110,
+          "y": 190
+        },
+        {
+          "x": 430,
+          "y": 190,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    },
     "files": [
       "build/**/*",
       "node_modules/**/*"
