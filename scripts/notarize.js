@@ -12,10 +12,11 @@ exports.default = async function notarizing (context) {
   const appName = context.packager.appInfo.productFilename
 
   return await notarize({
+    tool: 'notarytool',
     appBundleId: 'storage.nft.nftup',
     appPath: `${appOutDir}/${appName}.app`,
     appleId: process.env.APPLEID,
     appleIdPassword: process.env.APPLEIDPASS,
-    ascProvider: process.env.TEAMID
+    teamId: process.env.TEAMID
   })
 }
