@@ -9,7 +9,11 @@
     "appId": "storage.nft.nftup",
     "productName": "NFT UP",
     "mac": {
-      "category": "public.app-category.utilities"
+      "category": "public.app-category.utilities",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist"
     },
     "dmg": {
       "background": "build/background.png",
@@ -24,7 +28,8 @@
           "type": "link",
           "path": "/Applications"
         }
-      ]
+      ],
+      "sign": false
     },
     "files": [
       "build/**/*",
@@ -32,7 +37,8 @@
     ],
     "directories": {
       "buildResources": "assets"
-    }
+    },
+    "afterSign": "scripts/notarize.js"
   },
   "scripts": {
     "start": "concurrently \"BROWSER=none npm run start:ui\" \"wait-on http://localhost:3000 && npm run start:electron\"",
@@ -62,8 +68,10 @@
     "@testing-library/react": "^12.1.4",
     "@testing-library/user-event": "^13.5.0",
     "concurrently": "^7.0.0",
+    "dotenv": "^16.0.0",
     "electron": "^17.2.0",
     "electron-builder": "^22.14.13",
+    "electron-notarize": "^1.2.1",
     "react-scripts": "5.0.0",
     "standard": "^16.0.4",
     "wait-on": "^6.0.1"
