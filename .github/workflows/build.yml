@@ -30,3 +30,4 @@ jobs:
         env:
           APPLEID: ${{ secrets.apple_id }}
           APPLEIDPASS: ${{ secrets.apple_id_pass }}
+          TEAMID: ${{ secrets.team_id }}
