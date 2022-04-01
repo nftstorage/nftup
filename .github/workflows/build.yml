@@ -23,7 +23,7 @@ jobs:
         uses: samuelmeuli/action-electron-builder@v1
         with:
           github_token: ${{ secrets.github_token }}
-          release: false # keep github release as draft for manual inspection
+          release: ${{ startsWith(github.ref, 'refs/tags/v') }}
           build_script_name: build:ui
           mac_certs: ${{ secrets.mac_certs }}
           mac_certs_password: ${{ secrets.mac_certs_password }}
