@@ -17,6 +17,7 @@ export function App () {
   const [filePaths, setFilePaths] = useState([])
   const [statusText, setStatusText] = useState('')
   const [storedBytes, setStoredBytes] = useState(0)
+  const [storedChunks, setStoredChunks] = useState(0)
   const [totalBytes, setTotalBytes] = useState(0)
   const [totalFiles, setTotalFiles] = useState(0)
   const [cid, setCid] = useState('')
@@ -29,9 +30,9 @@ export function App () {
         setStage(STAGE_ERRORING)
         return
       }
-      if (progress.filePaths != null) setFilePaths(progress.filePaths)
       if (progress.statusText != null) setStatusText(progress.statusText)
       if (progress.storedBytes != null) setStoredBytes(progress.storedBytes)
+      if (progress.storedChunks != null) setStoredChunks(progress.storedChunks)
       if (progress.totalBytes != null) setTotalBytes(progress.totalBytes)
       if (progress.totalFiles != null) setTotalFiles(progress.totalFiles)
       if (progress.cid != null) {
@@ -65,6 +66,7 @@ export function App () {
         <UploadProgress
           statusText={statusText}
           storedBytes={storedBytes}
+          storedChunks={storedChunks}
           totalBytes={totalBytes}
           totalFiles={totalFiles}
         />
@@ -91,6 +93,7 @@ export function App () {
     setError('')
     setStatusText('Reading files...')
     setStoredBytes(0)
+    setStoredChunks(0)
     setTotalBytes(files.reduce((total, f) => total + f.size, 0))
     setTotalFiles(files.length)
     setCid('')

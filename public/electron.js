@@ -80,7 +80,6 @@ function createWindow () {
       sendUploadProgress({ statusText: 'Reading files...' })
       let totalBytes = 0
       const files = []
-      const filePaths = []
       try {
         let pathPrefix
         // if a single directory, yield files without the directory name in them
@@ -91,9 +90,8 @@ function createWindow () {
         for (const path of paths) {
           for await (const file of filesFromPath(path, { pathPrefix })) {
             files.push(file)
-            filePaths.push(file.path)
             totalBytes += file.size
-            sendUploadProgress({ filePaths, totalBytes, totalFiles: files.length })
+            sendUploadProgress({ totalBytes, totalFiles: files.length })
           }
         }
       } catch (err) {
@@ -112,13 +110,15 @@ function createWindow () {
         return sendUploadProgress({ error: `packing files: ${err.message}` })
       }
 
-      sendUploadProgress({ statusText: 'Storing files...', storedBytes: 0.01 })
       try {
-        let storedBytes = 0
+        let storedChunks = 0
+        let storedBytes = 0.01
+        sendUploadProgress({ statusText: 'Storing files...', storedChunks, storedBytes })
         await NFTStorage.storeCar({ endpoint, token }, car, {
           onStoredChunk (size) {
+            storedChunks++
             storedBytes += size
-            sendUploadProgress({ storedBytes })
+            sendUploadProgress({ storedBytes, storedChunks })
             mainWindow.setProgressBar(storedBytes / totalBytes)
           }
         })
