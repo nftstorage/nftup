@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 export function TokenForm ({ onToken }) {
   const [token, setToken] = useState('')
-  const handleInput = e => setToken(e.target.value)
+  const handleInput = e => setToken(String(e.target.value).trim())
   const handleSubmit = e => { e.preventDefault(); onToken(token) }
 
   return (
