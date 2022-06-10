@@ -21,6 +21,8 @@ export function App () {
   const [totalBytes, setTotalBytes] = useState(0)
   const [totalFiles, setTotalFiles] = useState(0)
   const [cid, setCid] = useState('')
+  const [bucket, setBucket] = useState('')
+  const [objectName, setObjectName] = useState('')
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -39,6 +41,12 @@ export function App () {
         setCid(progress.cid)
         setStage(STAGE_REPORTING)
       }
+      if (progress.objectName != null) {
+        setObjectName(progress.objectName)
+      }
+      if (progress.bucket != null) {
+        setBucket(progress.bucket)
+      }
     }
     ipcRenderer.on('uploadProgress', handleUploadProgress)
     return () => ipcRenderer.off('uploadProgress', handleUploadProgress)
@@ -55,7 +63,7 @@ export function App () {
   if (stage === STAGE_REPORTING) {
     return (
       <Layout>
-        <Reporter cid={cid} onClose={() => setStage(STAGE_PICKING)} />
+        <Reporter bucket={bucket} objectName={objectName} cid={cid} onClose={() => setStage(STAGE_PICKING)} />
       </Layout>
     )
   }
@@ -75,8 +83,12 @@ export function App () {
   }
 
   if (stage === STAGE_AUTHENTICATING) {
-    const onToken = async token => {
-      await ipcRenderer.invoke('setApiToken', token)
+    const onToken = async (key, secret, bucket) => {
+      await ipcRenderer.invoke('setApiCredentials', {
+        key,
+        secret,
+        bucket
+      })
       setStage(STAGE_UPLOADING)
       ipcRenderer.send('uploadFiles', filePaths)
     }

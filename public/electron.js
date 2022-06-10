@@ -4,9 +4,21 @@ const path = require('path')
 const { filesFromPath } = require('files-from-path')
 const { NFTStorage } = require('nft.storage')
 const Store = require('electron-store')
-const fs = require('fs')
+const fs = require('fs');
+const stream = require('node:stream');
 
-const endpoint = 'https://api.nft.storage'
+//S3 Imports
+const {
+  S3Client
+} = require("@aws-sdk/client-s3");
+const { Upload } = require("@aws-sdk/lib-storage");
+
+const s3config = {
+  credentials: {},
+  endpoint: `https://s3.fbase.dev`,
+  region: "us-east-1",
+  forcePathStyle: true,
+};
 
 function createWindow () {
   const store = new Store({ schema: { apiToken: { type: 'string' } } })
@@ -21,7 +33,7 @@ function createWindow () {
       submenu: [{
         id: 'clear-api-token',
         label: 'Clear API Token',
-        click: () => store.set('apiToken', ''),
+        click: () => store.set('apiSecret', ''),
         enabled: true
       }]
     },
@@ -31,7 +43,7 @@ function createWindow () {
       submenu: [
         {
           label: 'Learn More',
-          click: () => shell.openExternal('https://nft.storage')
+          click: () => shell.openExternal('https:/filebase.com')
         }
       ]
     }
@@ -63,16 +75,35 @@ function createWindow () {
 
   // mainWindow.webContents.openDevTools()
 
-  ipcMain.handle('setApiToken', (_, token) => store.set('apiToken', token))
-  ipcMain.handle('hasApiToken', () => Boolean(store.get('apiToken')))
+  ipcMain.handle('setApiCredentials', (_, {
+    key,
+    secret,
+    bucket
+  }) => {
+    store.set('apiKey', key)
+    store.set('apiSecret', secret)
+    store.set('apiBucket', bucket)
+  })
+  ipcMain.handle('setApiToken', (_, token) => store.set('apiSecret', token))
+  ipcMain.handle('hasApiToken', () => Boolean(store.get('apiSecret')))
 
   const sendUploadProgress = p => mainWindow.webContents.send('uploadProgress', p)
 
   ipcMain.on('uploadFiles', async (event, paths) => {
     /** @type {string} */
-    const token = store.get('apiToken')
-    if (!token) {
-      return sendUploadProgress({ error: 'missing API token' })
+    s3config.credentials.secretAccessKey = store.get('apiSecret')
+    if (!s3config.credentials.secretAccessKey) {
+      return sendUploadProgress({ error: 'missing secret' })
+    }
+
+    s3config.credentials.accessKeyId = store.get('apiKey')
+    if (!s3config.credentials.accessKeyId) {
+      return sendUploadProgress({ error: 'missing key' })
+    }
+
+    const bucketForUpload = store.get('apiBucket');
+    if (!bucketForUpload) {
+      return sendUploadProgress({ error: 'missing bucket' })
     }
 
     try {
@@ -80,6 +111,7 @@ function createWindow () {
       sendUploadProgress({ statusText: 'Reading files...' })
       let totalBytes = 0
       const files = []
+      let objectName;
       try {
         let pathPrefix
         // if a single directory, yield files without the directory name in them
@@ -87,12 +119,19 @@ function createWindow () {
           pathPrefix = paths[0]
         }
 
-        for (const path of paths) {
-          for await (const file of filesFromPath(path, { pathPrefix })) {
-            files.push(file)
-            totalBytes += file.size
-            sendUploadProgress({ totalBytes, totalFiles: files.length })
-          }
+        // set directory name as object name
+        const filePath = paths[0];
+        let pathToImport;
+        if (!objectName) {
+          pathToImport = path.dirname(filePath);
+          objectName = path.basename(pathToImport);
+          pathPrefix = pathToImport;
+        }
+
+        for await (const file of filesFromPath(pathToImport, { pathPrefix })) {
+          files.push(file)
+          totalBytes += file.size
+          sendUploadProgress({ totalBytes, totalFiles: files.length })
         }
       } catch (err) {
         console.error(err)
@@ -100,9 +139,9 @@ function createWindow () {
       }
 
       sendUploadProgress({ statusText: 'Packing files...' })
-      let cid, car
+      let cid, car, out
       try {
-        ;({ cid, car } = files.length === 1 && paths[0].endsWith(files[0].name)
+        ;({ cid, car, out } = files.length === 1 && paths[0].endsWith(files[0].name)
           ? await NFTStorage.encodeBlob(files[0])
           : await NFTStorage.encodeDirectory(files))
       } catch (err) {
@@ -114,14 +153,35 @@ function createWindow () {
         let storedChunks = 0
         let storedBytes = 0.01
         sendUploadProgress({ statusText: 'Storing files...', storedChunks, storedBytes })
-        await NFTStorage.storeCar({ endpoint, token }, car, {
-          onStoredChunk (size) {
-            storedChunks++
-            storedBytes += size
+        try {
+          sendUploadProgress({ bucket: bucketForUpload, objectName: objectName })
+          const readableStream = stream.Readable.from(out)
+          const parallelUploads3 = new Upload({
+            client: new S3Client(s3config),
+            params: {
+              Bucket: bucketForUpload,
+              Key: objectName,
+              Body: readableStream,
+              Metadata: {
+                import: 'car',
+                'expected-cid': cid.toString()
+              },
+            },
+            leavePartsOnError: false, // optional manually handle dropped parts
+          });
+
+          parallelUploads3.on("httpUploadProgress", (progress) => {
+            storedChunks++;
+            storedBytes = progress.loaded;
             sendUploadProgress({ storedBytes, storedChunks })
             mainWindow.setProgressBar(storedBytes / totalBytes)
-          }
-        })
+          });
+
+          await parallelUploads3.done();
+        } catch (err) {
+          console.error(err);
+          return sendUploadProgress({ error: `storing files: ${err.message}` })
+        }
       } catch (err) {
         console.error(err)
         return sendUploadProgress({ error: `storing files: ${err.message}` })
