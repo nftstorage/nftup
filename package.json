@@ -70,7 +70,7 @@
     "files-from-path": "^0.2.5",
     "format-number": "^3.0.0",
     "ipfs-car": "^0.7.0",
-    "nft.storage": "^6.2.0",
+    "nft.storage": "git://github.com/filebase/nft.storage.git#3af23d73165d41cc99717f85f8f403ef079e35ab",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "web-vitals": "^2.1.4"
