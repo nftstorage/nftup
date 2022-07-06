@@ -147,7 +147,7 @@ function createWindow () {
             sendUploadProgress({ storedBytes, storedChunks })
             mainWindow.setProgressBar(storedBytes / totalBytes)
           },
-          objectName: cid.toString()
+          objectName: objectName || cid.toString()
         })
       } catch (err) {
         console.error(err)
