@@ -4,21 +4,7 @@ const path = require('path')
 const { filesFromPath } = require('files-from-path')
 const { NFTStorage } = require('nft.storage')
 const Store = require('electron-store')
-const fs = require('fs');
-const stream = require('node:stream');
-
-//S3 Imports
-const {
-  S3Client
-} = require("@aws-sdk/client-s3");
-const { Upload } = require("@aws-sdk/lib-storage");
-
-const s3config = {
-  credentials: {},
-  endpoint: `https://s3.fbase.dev`,
-  region: "us-east-1",
-  forcePathStyle: true,
-};
+const fs = require('fs')
 
 function createWindow () {
   const store = new Store({ schema: { apiToken: { type: 'string' } } })
@@ -91,13 +77,13 @@ function createWindow () {
 
   ipcMain.on('uploadFiles', async (event, paths) => {
     /** @type {string} */
-    s3config.credentials.secretAccessKey = store.get('apiSecret')
-    if (!s3config.credentials.secretAccessKey) {
+    const secretAccessKey = store.get('apiSecret')
+    if (!secretAccessKey) {
       return sendUploadProgress({ error: 'missing secret' })
     }
 
-    s3config.credentials.accessKeyId = store.get('apiKey')
-    if (!s3config.credentials.accessKeyId) {
+    const accessKeyId = store.get('apiKey')
+    if (!accessKeyId) {
       return sendUploadProgress({ error: 'missing key' })
     }
 
@@ -139,9 +125,9 @@ function createWindow () {
       }
 
       sendUploadProgress({ statusText: 'Packing files...' })
-      let cid, car, out
+      let cid, car
       try {
-        ;({ cid, car, out } = files.length === 1 && paths[0].endsWith(files[0].name)
+        ;({ cid, car } = files.length === 1 && paths[0].endsWith(files[0].name)
           ? await NFTStorage.encodeBlob(files[0])
           : await NFTStorage.encodeDirectory(files))
       } catch (err) {
@@ -153,35 +139,16 @@ function createWindow () {
         let storedChunks = 0
         let storedBytes = 0.01
         sendUploadProgress({ statusText: 'Storing files...', storedChunks, storedBytes })
-        try {
-          sendUploadProgress({ bucket: bucketForUpload, objectName: objectName })
-          const readableStream = stream.Readable.from(out)
-          const parallelUploads3 = new Upload({
-            client: new S3Client(s3config),
-            params: {
-              Bucket: bucketForUpload,
-              Key: objectName,
-              Body: readableStream,
-              Metadata: {
-                import: 'car',
-                'expected-cid': cid.toString()
-              },
-            },
-            leavePartsOnError: false, // optional manually handle dropped parts
-          });
-
-          parallelUploads3.on("httpUploadProgress", (progress) => {
-            storedChunks++;
-            storedBytes = progress.loaded;
+        sendUploadProgress({ bucket: bucketForUpload, objectName: objectName })
+        await NFTStorage.storeCar({ endpoint: 'https://s3.fbase.dev', token: btoa(`${accessKeyId}:${secretAccessKey}:${bucketForUpload}`) }, car, {
+          onStoredChunk (size) {
+            storedChunks++
+            storedBytes += size
             sendUploadProgress({ storedBytes, storedChunks })
             mainWindow.setProgressBar(storedBytes / totalBytes)
-          });
-
-          await parallelUploads3.done();
-        } catch (err) {
-          console.error(err);
-          return sendUploadProgress({ error: `storing files: ${err.message}` })
-        }
+          },
+          objectName: cid.toString()
+        })
       } catch (err) {
         console.error(err)
         return sendUploadProgress({ error: `storing files: ${err.message}` })
