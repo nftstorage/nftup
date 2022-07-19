@@ -2,7 +2,7 @@ const { app, BrowserWindow, ipcMain, shell, Menu } = require('electron')
 const isDev = require('electron-is-dev')
 const path = require('path')
 const { filesFromPath } = require('files-from-path')
-const { NFTStorage } = require('nft.storage')
+const { FilebaseStorage } = require('filebase.storage')
 const Store = require('electron-store')
 const fs = require('fs')
 
@@ -10,9 +10,7 @@ function createWindow () {
   const store = new Store({ schema: { apiToken: { type: 'string' } } })
 
   const template = [
-    { role: 'appMenu' },
     { role: 'fileMenu' },
-    { role: 'editMenu' },
     ...isDev ? [{ role: 'viewMenu' }] : [],
     {
       label: 'Tools',
@@ -39,7 +37,7 @@ function createWindow () {
   Menu.setApplicationMenu(menu)
 
   const mainWindow = new BrowserWindow({
-    title: 'NFT UP',
+    title: 'IPFS3 UP',
     width: 880,
     height: 420,
     resizable: false,
@@ -49,6 +47,8 @@ function createWindow () {
       preload: path.join(__dirname, 'preload.js')
     }
   })
+
+  // mainWindow.setMenu(null)
 
   mainWindow.loadURL(isDev
     ? 'http://localhost:3000'
@@ -128,8 +128,8 @@ function createWindow () {
       let cid, car
       try {
         ;({ cid, car } = files.length === 1 && paths[0].endsWith(files[0].name)
-          ? await NFTStorage.encodeBlob(files[0])
-          : await NFTStorage.encodeDirectory(files))
+          ? await FilebaseStorage.encodeBlob(files[0])
+          : await FilebaseStorage.encodeDirectory(files))
       } catch (err) {
         console.error(err)
         return sendUploadProgress({ error: `packing files: ${err.message}` })
@@ -140,15 +140,25 @@ function createWindow () {
         let storedBytes = 0.01
         sendUploadProgress({ statusText: 'Storing files...', storedChunks, storedBytes })
         sendUploadProgress({ bucket: bucketForUpload, objectName: objectName })
-        await NFTStorage.storeCar({ endpoint: 'https://s3.fbase.dev', token: btoa(`${accessKeyId}:${secretAccessKey}:${bucketForUpload}`) }, car, {
-          onStoredChunk (size) {
-            storedChunks++
-            storedBytes += size
-            sendUploadProgress({ storedBytes, storedChunks })
-            mainWindow.setProgressBar(storedBytes / totalBytes)
-          },
-          objectName: objectName || cid.toString()
-        })
+        await FilebaseStorage.storeCar(
+          { endpoint: 'https://s3.filebase.com', token: btoa(`${accessKeyId}:${secretAccessKey}:${bucketForUpload}`) },
+          car,
+          objectName || cid.toString(),
+          {
+            onStoredChunk (size) {
+              storedChunks++
+              storedBytes += size
+              sendUploadProgress({ storedBytes, storedChunks })
+              mainWindow.setProgressBar(storedBytes / totalBytes)
+              if (storedBytes > totalBytes) {
+                sendUploadProgress({statusText: 'Processing upload...'})
+              }
+            },
+            onComplete () {
+              return sendUploadProgress({statusText: 'Processing upload...'})
+            }
+          }
+        )
       } catch (err) {
         console.error(err)
         return sendUploadProgress({ error: `storing files: ${err.message}` })

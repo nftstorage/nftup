@@ -4,13 +4,13 @@ export function Reporter ({ cid, bucket, objectName, onClose }) {
   return (
     <div className='relative ma4 flex-auto flex items-center'>
       <div className='absolute top-0 right-0'><CloseButton onClick={onClose} /></div>
-      <div className='w-100 pa4 ba bg-white'>
+      <div className='w-100 pa4 ba bg-white br4'>
         <p className='f4 b mv1'>CID <CopyButton text={cid} title='Copy CID to clipboard' /></p>
         <p className='f6 mt1 mb3 truncate'>{cid}</p>
         <p className='f4 b mv1'>IPFS URL <CopyButton text={`ipfs://${cid}`} title='Copy IPFS URL to clipboard' /></p>
         <p className='f6 mt1 mb3 truncate'>ipfs://{cid}</p>
-        <p className='f4 b mv1'>Object URL <CopyButton text={`https://${bucket}.s3.filebase.com/${objectName}`} title='Copy gateway URL to clipboard' /></p>
-        <a className='db f6 mt1 mb3 black truncate' href={`https://${bucket}.s3.filebase.com/${objectName}`} target='_blank' rel='noreferrer'>https://{bucket}.s3.filebase.com/{objectName}</a>
+        {/*<p className='f4 b mv1'>Object URL <CopyButton text={`https://${bucket}.s3.filebase.com/${objectName}`} title='Copy gateway URL to clipboard' /></p>
+        <a className='db f6 mt1 mb3 black truncate' href={`https://${bucket}.s3.filebase.com/${objectName}`} target='_blank' rel='noreferrer'>https://{bucket}.s3.filebase.com/{objectName}</a>*/}
         <p className='f4 b mv1'>Gateway URL <CopyButton text={`https://ipfs.filebase.io/ipfs/${cid}`} title='Copy gateway URL to clipboard' /></p>
         <a className='db f6 mt1 mb3 black truncate' href={`https://ipfs.filebase.io/ipfs/${cid}`} target='_blank' rel='noreferrer'>https://ipfs.filebase.io/ipfs/{cid}</a>
       </div>

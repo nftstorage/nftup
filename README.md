@@ -1,4 +1,4 @@
-<h1 align="center"><img src="nftup.png" width="211"/></h1>
+<h1 align="center"><img src="ipfs3up.png" width="211"/></h1>
 
 App to easily upload NFTs to NFT.Storage with no-code, from the comfort of your laptop computer machine.
 

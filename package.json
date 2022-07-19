@@ -1,13 +1,13 @@
 {
-  "name": "nftup",
+  "name": "ipfs3up",
   "version": "1.0.0-beta.0",
   "private": true,
-  "description": "Filebase.com IPFS uploader",
+  "description": "Filebase.com IPFS S3 Uploader",
   "main": "public/electron.js",
   "homepage": ".",
   "build": {
-    "appId": "storage.filebase.filebaseup",
-    "productName": "NFT UP",
+    "appId": "storage.filebase.ipfs3up",
+    "productName": "IPFS S3 UP",
     "mac": {
       "category": "public.app-category.utilities",
       "hardenedRuntime": true,
@@ -58,7 +58,7 @@
     "build:electron": "electron-builder",
     "test": "react-scripts test"
   },
-  "repository": "https://github.com/filebase/filebaseup",
+  "repository": "https://github.com/filebase/ipfs3up",
   "author": "Alan Shaw",
   "license": "Apache-2.0 OR MIT",
   "dependencies": {
@@ -70,7 +70,7 @@
     "files-from-path": "^0.2.5",
     "format-number": "^3.0.0",
     "ipfs-car": "^0.7.0",
-    "nft.storage": "git://github.com/filebase/nft.storage.git#66b48350ca8aa2655e00e66595556e6f03d7e624",
+    "filebase.storage": "git://github.com/filebase/nft.storage.git",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "web-vitals": "^2.1.4"

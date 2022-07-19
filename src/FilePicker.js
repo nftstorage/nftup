@@ -12,8 +12,8 @@ export function FilePicker ({ onPickFiles }) {
     onPickFiles(Array.from(e.dataTransfer.files))
   }
   const handleFilesChange = e => onPickFiles(Array.from(e.target.files))
-  const labelClass = `relative ba bw4 ${borderClass} grow b--dashed br4 ma4 flex-auto`
-  const labelStyle = { backgroundColor: 'rgba(255,255,255,0.1)' }
+  const labelClass = `relative ba bw3 ${borderClass} grow b--solid white br4 ma4 flex-auto`
+  const labelStyle = { backgroundColor: 'rgba(52,58,65,0.1)', borderColor: '#FFA500' }
   return (
     <label htmlFor='files' className={labelClass} style={labelStyle} onDragEnter={onDragEnter} onDragOver={killEvent} onDrop={handleDrop} draggable>
       <input className='absolute pointer w-100 h-100 top-0 o-0' type='file' id='files' multiple webkitdirectory='true' onChange={handleFilesChange} />

@@ -125,11 +125,18 @@ export function App () {
   )
 }
 
+const titleStyle = {
+  fontFamily: 'Inter',
+  textAlign: 'center',
+  fontSize: '5vw'
+}
+
 function Layout ({ children }) {
   return (
     <div className='flex items-center vh-100'>
       <div className='flex-none'>
-        <img src='logo-nftup.svg' width='256' className='ma4 mr0' alt='NFT UP logo' />
+        <img src='logo-ipfs3up.png' width='175' className='mr2 ml4 mb3' alt='IPFS3 UP logo' />
+        <h1 className='mr0 ml4 mt0 mb0 white' style={titleStyle}>filebase</h1>
       </div>
       <div className='flex-auto h-100 flex'>
         {children}

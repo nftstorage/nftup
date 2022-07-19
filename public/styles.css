@@ -1,9 +1,11 @@
+@import url('https://rsms.me/inter/inter.css');
+
 :root {
-  --nftorange: #ee4116;
+  --fbdark: #343a41;
 }
 
-.bg-nftorange {
-  background-color: var(--nftorange);
+.bg-fbdark {
+  background-color: var(--fbdark);
 }
 
 .hover-b--white {
@@ -26,7 +28,7 @@
 .meter > span {
   display: block;
   height: 100%;
-  background-color: #ee4116;
+  background-color: #E66A00;
   background-image: linear-gradient(
     center bottom,
     #ee4116 37%,
