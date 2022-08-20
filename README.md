@@ -12,7 +12,7 @@ App to easily upload NFTs to NFT.Storage with no-code, from the comfort of your 
 
     <img width="496" alt="Screenshot 2022-03-31 at 15 09 35" src="https://user-images.githubusercontent.com/253/161609435-9b1ba803-ea1b-48dd-a721-e9250f5ad2d1.png">
 
-* Upload progress, file and size indicators. Auomtatic retry on fail:
+* Upload progress, file and size indicators. Automatic retry on fail:
 
     <img width="496" alt="Screenshot 2022-03-31 at 15 14 17" src="https://user-images.githubusercontent.com/253/161602971-2ed0e84b-3f53-47a6-b997-fa903b88c5e7.png">
 
