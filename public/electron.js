@@ -7,6 +7,7 @@ const Store = require('electron-store')
 const fs = require('fs')
 
 const endpoint = 'https://api.nft.storage'
+const maxRetries = 10
 
 function createWindow () {
   const store = new Store({ schema: { apiToken: { type: 'string' } } })
@@ -120,7 +121,8 @@ function createWindow () {
             storedBytes += size
             sendUploadProgress({ storedBytes, storedChunks })
             mainWindow.setProgressBar(storedBytes / totalBytes)
-          }
+          },
+          maxRetries
         })
       } catch (err) {
         console.error(err)
