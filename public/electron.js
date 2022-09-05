@@ -124,16 +124,19 @@ function createWindow () {
           },
           maxRetries
         })
+        sendUploadProgress({ cid: cid.toString(), storedBytes: totalBytes, statusText: 'Done!' })
       } catch (err) {
         console.error(err)
         return sendUploadProgress({ error: `storing files: ${err.message}` })
       } finally {
         if (car && car.blockstore && car.blockstore.close) {
-          car.blockstore.close()
+          try {
+            car.blockstore.close()
+          } catch (err) {
+            console.error('failed to close blockstore', err)
+          }
         }
       }
-
-      sendUploadProgress({ cid: cid.toString(), storedBytes: totalBytes, statusText: 'Done!' })
     } finally {
       mainWindow.setProgressBar(-1)
     }
