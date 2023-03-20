@@ -119,8 +119,8 @@ function createWindow () {
           onStoredChunk (size) {
             storedChunks++
             storedBytes += size
-            sendUploadProgress({ storedBytes, storedChunks })
-            mainWindow.setProgressBar(storedBytes / totalBytes)
+            sendUploadProgress({ storedBytes: Math.min(storedBytes, totalBytes), storedChunks })
+            mainWindow.setProgressBar(Math.min(storedBytes / totalBytes, 1))
           },
           maxRetries
         })
