@@ -131,7 +131,7 @@ function createWindow () {
       } finally {
         if (car && car.blockstore && car.blockstore.close) {
           try {
-            car.blockstore.close()
+            await car.blockstore.close()
           } catch (err) {
             console.error('failed to close blockstore', err)
           }
