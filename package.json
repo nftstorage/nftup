@@ -66,7 +66,7 @@
     "electron-store": "^8.0.1",
     "files-from-path": "^0.2.5",
     "format-number": "^3.0.0",
-    "nft.storage": "^6.2.0",
+    "nft.storage": "^7.0.3",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "web-vitals": "^2.1.4"
