@@ -1,10 +1,10 @@
 <h1 align="center"><img src="nftup.png" width="211"/></h1>
 
-** Please Note: NFTup is deprecated and will stop working in June 2024 **
+App to easily upload NFTs to NFT.Storage with no-code, from the comfort of your laptop computer machine.
+
+**Please Note: NFTup is deprecated and will stop working in June 2024**
 
 Learn more about the future of NFT Storage in our [blog post](https://nft.storage/blog/the-next-chapter-of-nftstorage).
-
-App to easily upload NFTs to NFT.Storage with no-code, from the comfort of your laptop computer machine.
 
 ## Install
 
